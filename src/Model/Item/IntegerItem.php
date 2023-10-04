@@ -6,12 +6,11 @@ namespace Alan6k8\SortedLinkedList\Model\Item;
 
 class IntegerItem extends AbstractItem
 {
-    // public function __construct(
-    //     private readonly int $value,
-    //     ?AbstractItem $next = null,
-    // ) {
-    //     parent::__construct($next);
-    // }
+    public function __construct(
+        int $value,
+    ) {
+        parent::__construct($value);
+    }
 
     public function getType(): ItemType
     {

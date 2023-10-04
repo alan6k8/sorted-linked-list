@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Unit;
 
 use Alan6k8\SortedLinkedList\Exception\ItemTypeMismatchException;
+use Alan6k8\SortedLinkedList\Factory\SortedLinkedListFactory;
 use Alan6k8\SortedLinkedList\Model\Item\IntegerItem;
 use Alan6k8\SortedLinkedList\Model\Item\StringItem;
 use Alan6k8\SortedLinkedList\Model\SortedLinkedList;
@@ -23,17 +24,30 @@ class SortedLinkedListTest extends \Codeception\Test\Unit
     }
 
     // tests
-    public function testPushItem()
+    public function testAddItemDescendingStrings()
     {
-        $list = new SortedLinkedList();
-        $list->pushItem(new StringItem('Bladnoch'));
+        $listFactory = new SortedLinkedListFactory();
+        $list = $listFactory->createDescending();
+        $list->add(new StringItem('Bladnoch'));
+        Debug::debug($list->toArray());
 
-        $list->pushItem(new StringItem('Machrie Moor'));
-        Debug::debug($list);
+        // prepend to the beginning
+        $list->addStringValue('Machrie Moor');
+        Debug::debug($list->toArray());
+
+        // append to the end
+        $list->add(new StringItem('Ardbeg Corryvreckan'));
+        Debug::debug($list->toArray());
+
+        // insert in the middle
+        $list->add(new StringItem('Cragganmore'));
+        Debug::debug($list->toArray());
+        $list->add(new StringItem('Macallan'));
+        Debug::debug($list->toArray());
 
         // item gets pushed to the end of the list
         $this->assertEquals(
-            ['Bladnoch', 'Machrie Moor'],
+            ['Machrie Moor', 'Macallan', 'Cragganmore', 'Bladnoch', 'Ardbeg Corryvreckan'],
             $list->toArray(),
             'List should contain expected items',
         );
@@ -43,22 +57,33 @@ class SortedLinkedListTest extends \Codeception\Test\Unit
             ItemTypeMismatchException::class,
             'Mixing item types is not allowed',
             function () use ($list) {
-                $list->pushItem(new IntegerItem(1));
+                $list->add(new IntegerItem(1));
             }
         );
     }
 
-    public function testUnshiftItem()
+    public function testAddItemAscendingInts()
     {
-        $list = new SortedLinkedList();
-        $list->unshiftItem(new IntegerItem(10));
+        $listFactory = new SortedLinkedListFactory();
+        $list = $listFactory->createAscending();
+        $list->add(new IntegerItem(2));
+        Debug::debug($list->toArray());
 
-        $list->unshiftItem(new IntegerItem(20));
-        Debug::debug($list);
+        // prepend to the beginning
+        $list->addIntValue(13);
+        Debug::debug($list->toArray());
+
+        // append to the end
+        $list->add(new IntegerItem(1));
+        Debug::debug($list->toArray());
+
+        // insert in the middle
+        $list->add(new IntegerItem(3));
+        Debug::debug($list->toArray());
 
         // item gets pushed to the end of the list
         $this->assertEquals(
-            [20, 10],
+            [1, 2, 3, 13],
             $list->toArray(),
             'List should contain expected items',
         );
@@ -68,7 +93,7 @@ class SortedLinkedListTest extends \Codeception\Test\Unit
             ItemTypeMismatchException::class,
             'Mixing item types is not allowed',
             function () use ($list) {
-                $list->unshiftItem(new StringItem('Lowland'));
+                $list->add(new StringItem('one'));
             }
         );
     }

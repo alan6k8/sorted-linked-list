@@ -28,6 +28,11 @@ abstract class AbstractItem
         return $this->getType() === $itemType;
     }
 
+    public function __toString(): string
+    {
+        return (string)$this->getValue();
+    }
+
     abstract public function getType(): ItemType;
 
     abstract public function getValue(): string|int;

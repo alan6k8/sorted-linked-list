@@ -6,12 +6,11 @@ namespace Alan6k8\SortedLinkedList\Model\Item;
 
 class StringItem extends AbstractItem
 {
-    // public function __construct(
-    //     private readonly string $value,
-    //     ?AbstractItem $next = null,
-    // ) {
-    //     parent::__construct($next);
-    // }
+    public function __construct(
+        string $value,
+    ) {
+        parent::__construct($value);
+    }
 
     public function getType(): ItemType
     {

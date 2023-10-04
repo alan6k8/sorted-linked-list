@@ -8,36 +8,42 @@ use Alan6k8\SortedLinkedList\Exception\ItemTypeMismatchException;
 use Alan6k8\SortedLinkedList\Model\Item\AbstractItem;
 use Alan6k8\SortedLinkedList\Model\Item\IntegerItem;
 use Alan6k8\SortedLinkedList\Model\Item\StringItem;
+use Alan6k8\SortedLinkedList\Value\LinkedListSortOrder;
 
 class SortedLinkedList
 {
     private ?AbstractItem $head = null;
 
-    public function pushValue(string|int $value): AbstractItem
+    public function __construct(
+        private readonly LinkedListSortOrder $sortOrder = LinkedListSortOrder::ASC,
+    ) {
+    }
+
+    public function addValue(string|int $value): AbstractItem
     {
         $item = is_int($value) ? new IntegerItem($value) : new StringItem($value);
-        $this->pushItem($item);
+        $this->add($item);
 
         return $item;
     }
 
-    public function pushStringValue(string $value): StringItem
+    public function addStringValue(string $value): StringItem
     {
         $item = new StringItem($value);
-        $this->pushItem($item);
+        $this->add($item);
 
         return $item;
     }
 
-    public function pushIntValue(int $value): IntegerItem
+    public function addIntValue(int $value): IntegerItem
     {
         $item = new IntegerItem($value);
-        $this->pushItem($item);
+        $this->add($item);
 
         return $item;
     }
 
-    public function pushItem(AbstractItem $item): void
+    public function add(AbstractItem $item, bool $uniqueOnly = false): void
     {
         if ($this->head === null) {
             $this->head = $item;
@@ -47,55 +53,101 @@ class SortedLinkedList
 
         if (!$this->head->isOfSameType($item->getType())) {
             throw new ItemTypeMismatchException('Mixing item types is not allowed');
+        }
+
+        $comparison = $this->compare($this->head, $item);
+        if (
+            $this->sortOrder === LinkedListSortOrder::ASC && $comparison > 0
+            || $this->sortOrder === LinkedListSortOrder::DESC && $comparison < 1
+        ) {
+            if ($uniqueOnly && $comparison === 0) {
+                // value is already enlisted
+                return;
+            }
+
+            $item->setNext($this->head);
+            $this->head = $item;
+
+            return;
         }
 
         // traverse to the end
         $current = $this->head;
         while ($current->getNext() !== null) {
+            $comparison = $this->compare($current->getNext(), $item);
+            if (
+                $this->sortOrder === LinkedListSortOrder::ASC && $comparison > 0
+                || $this->sortOrder === LinkedListSortOrder::DESC && $comparison < 1
+            ) {
+                if ($uniqueOnly && $comparison === 0) {
+                    // value is already enlisted
+                    return;
+                }
+
+                // add item and terminate iteration
+                $item->setNext($current->getNext());
+                $current->setNext($item);
+
+                return;
+            }
             $current = $current->getNext();
         }
 
+        // passed whole list w/o insertion thus adding at the very end
         $current->setNext($item);
     }
 
-    public function unshiftValue(string|int $value): AbstractItem
-    {
-        $item = is_int($value) ? new IntegerItem($value) : new StringItem($value);
-        $this->unshiftItem($item);
-
-        return $item;
-    }
-
-    public function unshiftStringValue(string $value): StringItem
-    {
-        $item = new StringItem($value);
-        $this->unshiftItem($item);
-
-        return $item;
-    }
-
-    public function unshiftIntValue(int $value): IntegerItem
-    {
-        $item = new IntegerItem($value);
-        $this->unshiftItem($item);
-
-        return $item;
-    }
-
-    public function unshiftItem(AbstractItem $item): void
+    public function remove(AbstractItem $item): bool
     {
         if ($this->head === null) {
-            $this->head = $item;
-
-            return;
+            return false;
         }
 
-        if (!$this->head->isOfSameType($item->getType())) {
-            throw new ItemTypeMismatchException('Mixing item types is not allowed');
+        $current = $this->head;
+        while ($current->getNext() !== null) {
+            $comparison = $current->getNext() === $item;
+            if ($comparison === 0) {
+                // remove item and terminate iteration
+                $next = $current->getNext()->getNext();
+                $item->setNext($current->getNext());
+                $current->setNext($item);
+
+                return true;
+            }
         }
 
-        $item->setNext($this->head);
-        $this->head = $item;
+        // todo case missing
+
+        return false;
+    }
+
+    public function removeAllByValue(string|int $value): int
+    {
+
+    }
+
+    public function removeFirstByValue(string|int $value): bool
+    {
+
+    }
+
+    public function pop(): AbstractItem
+    {
+
+    }
+    public function shift(): AbstractItem
+    {
+
+    }
+
+    public function hasValue(string|int $value): bool
+    {
+
+    }
+
+    public function hasItem(AbstractItem $item): bool
+    {
+            // ===
     }
 
     /**
@@ -118,18 +170,8 @@ class SortedLinkedList
         return $list;
     }
 
-    // /**
-    //  * @param AbstractItem $item
-    //  * @throws ItemTypeMismatchException on failed check
-    //  */
-    // protected function checkTypeConsistency(AbstractItem $item): void
-    // {
-    //     if ($this->head === null) {
-    //         return;
-    //     }
-
-    //     if (!$this->head->isOfSameType($item->getType())) {
-    //         throw new ItemTypeMismatchException();
-    //     }
-    // }
+    protected function compare(AbstractItem $enlistedItem, AbstractItem $itemToEnlist): int
+    {
+        return $enlistedItem->getValue() <=> $itemToEnlist->getValue();
+    }
 }

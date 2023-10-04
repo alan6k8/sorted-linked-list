@@ -3,7 +3,7 @@
     "type": "project",
     "description": "Just an example implementation of library",
     "homepage": "https://github.com/alan6k8/sorted-linked-list",
-    "license": "GNU General Public License v3.0",
+    "license": "GPL-3.0-or-later",
     "authors": [
         {
             "name": "Alan Rusek",
@@ -18,10 +18,9 @@
     "require": {
         "php": ">=8.1",
         "codeception/codeception": "^5.0",
-        "codeception/module-asserts": "*"
+        "codeception/module-asserts": "^3"
     },
     "require-dev": {
-        "php": ">=8.1",
         "phpstan/phpstan": "^1.4",
         "codeception/assert-throws": "^1.3"
     },
