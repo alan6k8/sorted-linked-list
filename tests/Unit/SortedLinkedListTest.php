@@ -97,4 +97,130 @@ class SortedLinkedListTest extends \Codeception\Test\Unit
             }
         );
     }
+
+    public function testRemove()
+    {
+        $itemOne = new IntegerItem(2);
+        $itemTwo = new IntegerItem(12);
+        $listFactory = new SortedLinkedListFactory();
+        $list = $listFactory->createAscending();
+        $list->add($itemOne);
+        // $list->addIntValue(5);
+        // $list->add($itemTwo);
+        // $list->addIntValue(18);
+        Debug::debug($list->toArray());
+
+        $list->remove($itemOne);
+        $this->assertFalse($list->hasItem($itemOne));
+
+        // $list->remove($itemTwo);
+
+    }
+
+    public function testShift()
+    {
+        $listFactory = new SortedLinkedListFactory();
+        $list = $listFactory->createAscending();
+        $list->add(new IntegerItem(20));
+        $list->add(new IntegerItem(10));
+        Debug::debug($list->toArray());
+
+        $shifted = $list->shift();
+        Debug::debug($list->toArray());
+        Debug::debug($shifted);
+
+        $this->assertEquals(10, $shifted->getValue(), 'shifted item should have value of 10');
+        $this->assertFalse($shifted->hasNext(), 'shifted item should point to null as next item');
+
+        $shifted = $list->shift();
+        Debug::debug($list->toArray());
+        Debug::debug($shifted);
+
+        $this->assertEquals(20, $shifted->getValue(), 'shifted item should have value of 10');
+        $this->assertFalse($shifted->hasNext(), 'shifted item should point to null as next item');
+        $this->assertTrue($list->isEmpty(), 'List should be empty');
+    }
+
+    public function testPop()
+    {
+        $listFactory = new SortedLinkedListFactory();
+        $list = $listFactory->createDescending();
+        $list->add(new IntegerItem(20));
+        $list->add(new IntegerItem(10));
+        Debug::debug($list->toArray());
+
+        $shifted = $list->pop();
+        Debug::debug($list->toArray());
+        Debug::debug($shifted);
+
+        $this->assertEquals(10, $shifted->getValue(), 'shifted item should have value of 10');
+        $this->assertFalse($shifted->hasNext(), 'popped item should point to null as next item');
+
+        $shifted = $list->pop();
+        Debug::debug($list->toArray());
+        Debug::debug($shifted);
+
+        $this->assertEquals(20, $shifted->getValue(), 'shifted item should have value of 10');
+        $this->assertFalse($shifted->hasNext(), 'popped item should point to null as next item');
+        $this->assertTrue($list->isEmpty(), 'List should be empty');
+    }
+
+    public function testIterate()
+    {
+        $listFactory = new SortedLinkedListFactory();
+        $list = $listFactory->createAscending();
+        $list->add(new IntegerItem(20));
+        $list->add(new IntegerItem(10));
+        $list->add(new IntegerItem(30));
+        $list->add(new IntegerItem(40));
+        Debug::debug($list->toArray());
+
+        $i = 1;
+        foreach ($list->iterate() as $value) {
+            $this->assertEquals($i * 10, $value->getValue());
+            ++$i;
+        }
+    }
+
+    public function testHasValue()
+    {
+        $listFactory = new SortedLinkedListFactory();
+        $list = $listFactory->createAscending();
+        $list->add(new IntegerItem(2));
+        $list->add(new IntegerItem(4));
+        $list->add(new IntegerItem(6));
+        Debug::debug($list->toArray());
+
+        $this->assertTrue($list->hasValue(4), 'List should contain 4');
+
+        $list = $listFactory->createAscending();
+        $list->add(new StringItem('Venus'));
+        $list->add(new StringItem('Earth'));
+        $list->add(new StringItem('Mars'));
+        Debug::debug($list->toArray());
+
+        $this->assertTrue($list->hasValue('Earth'), 'List should contain Earth');
+    }
+
+    public function testHasItem()
+    {
+        $expectedItem = new IntegerItem(2);
+        $listFactory = new SortedLinkedListFactory();
+        $list = $listFactory->createAscending();
+        $list->add($expectedItem);
+        $list->add(new IntegerItem(4));
+        $list->add(new IntegerItem(6));
+        Debug::debug($list->toArray());
+
+        $this->assertTrue($list->hasItem($expectedItem), 'List should contain expected item');
+
+        $expectedItem = new StringItem('Mars');
+        $list = $listFactory->createAscending();
+        $list->add(new StringItem('Venus'));
+        $list->add(new StringItem('Earth'));
+        $list->add($expectedItem);
+        Debug::debug($list->toArray());
+
+        $this->assertTrue($list->hasItem($expectedItem), 'List should contain expected item');
+    }
 }

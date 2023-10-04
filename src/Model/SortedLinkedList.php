@@ -9,6 +9,9 @@ use Alan6k8\SortedLinkedList\Model\Item\AbstractItem;
 use Alan6k8\SortedLinkedList\Model\Item\IntegerItem;
 use Alan6k8\SortedLinkedList\Model\Item\StringItem;
 use Alan6k8\SortedLinkedList\Value\LinkedListSortOrder;
+use Generator;
+use RuntimeException;
+use UnexpectedValueException;
 
 class SortedLinkedList
 {
@@ -19,26 +22,26 @@ class SortedLinkedList
     ) {
     }
 
-    public function addValue(string|int $value): AbstractItem
+    public function addValue(string|int $value, bool $uniqueOnly = false): AbstractItem
     {
         $item = is_int($value) ? new IntegerItem($value) : new StringItem($value);
-        $this->add($item);
+        $this->add($item, $uniqueOnly);
 
         return $item;
     }
 
-    public function addStringValue(string $value): StringItem
+    public function addStringValue(string $value, bool $uniqueOnly = false): StringItem
     {
         $item = new StringItem($value);
-        $this->add($item);
+        $this->add($item, $uniqueOnly);
 
         return $item;
     }
 
-    public function addIntValue(int $value): IntegerItem
+    public function addIntValue(int $value, bool $uniqueOnly = false): IntegerItem
     {
         $item = new IntegerItem($value);
-        $this->add($item);
+        $this->add($item, $uniqueOnly);
 
         return $item;
     }
@@ -73,7 +76,7 @@ class SortedLinkedList
 
         // traverse to the end
         $current = $this->head;
-        while ($current->getNext() !== null) {
+        while ($current->hasNext()) {
             $comparison = $this->compare($current->getNext(), $item);
             if (
                 $this->sortOrder === LinkedListSortOrder::ASC && $comparison > 0
@@ -103,51 +106,129 @@ class SortedLinkedList
             return false;
         }
 
-        $current = $this->head;
-        while ($current->getNext() !== null) {
-            $comparison = $current->getNext() === $item;
-            if ($comparison === 0) {
-                // remove item and terminate iteration
-                $next = $current->getNext()->getNext();
-                $item->setNext($current->getNext());
-                $current->setNext($item);
+        if ($this->head === $item) {
+            $shifted = $this->shift();
+            unset($shifted);    // allow GC to collect it
 
-                return true;
-            }
+            return true;
         }
+
+        // $current = $this->head;
+        // while ($current->getNext() !== null) {
+        //     $comparison = $current->getNext() === $item;
+        //     if ($comparison === 0) {
+        //         // remove item and terminate iteration
+        //         $next = $current->getNext()->getNext();
+        //         $item->setNext($current->getNext());
+        //         $current->setNext($item);
+
+        //         return true;
+        //     }
+        // }
 
         // todo case missing
 
         return false;
     }
 
-    public function removeAllByValue(string|int $value): int
-    {
+    // public function removeAllByValue(string|int $value): int
+    // {
+        // just an idea, would most likely get powered by iteration and self::removeFirstByValue()
+    // }
 
-    }
-
-    public function removeFirstByValue(string|int $value): bool
-    {
-
-    }
+    // public function removeFirstByValue(string|int $value): bool
+    // {
+        // just an idea
+    // }
 
     public function pop(): AbstractItem
     {
+        if ($this->head === null) {
+            throw new UnexpectedValueException('Cannot pop from empty list');
+        }
 
+        if (!$this->head->hasNext()) {
+            $item = $this->head;
+            $this->head = null;
+
+            return $item;
+        }
+
+        $current = $this->head;
+        while ($current->hasNext()) {
+            if (!$current->getNext()->hasNext()) {
+                // pop item and terminate iteration
+                $item = $current->getNext();
+                $current->setNext(null);
+
+                return $item;
+            }
+            $current = $current->getNext();
+        }
+
+        throw new RuntimeException('Pop failed most likely due to implementation issue');
     }
+
     public function shift(): AbstractItem
     {
+        if ($this->head === null) {
+            throw new UnexpectedValueException('Cannot shift from empty list');
+        }
 
+        $item = $this->head;
+        if ($this->head->hasNext()) {
+            $this->head = $this->head->getNext();
+        } else {
+            $this->head = null;
+        }
+        // remove item from list
+        $item->setNext(null);
+
+        return $item;
+    }
+
+    public function isEmpty(): bool
+    {
+        return $this->head === null;
     }
 
     public function hasValue(string|int $value): bool
     {
+        foreach ($this->iterate() as $enlistedItem) {
+            if ($value === $enlistedItem->getValue()) {
+                return true;
+            }
+        }
 
+        return false;
     }
 
     public function hasItem(AbstractItem $item): bool
     {
-            // ===
+        foreach ($this->iterate() as $enlistedItem) {
+            if ($item === $enlistedItem) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @return Generator<int, AbstractItem, AbstractItem, void>
+     */
+    public function iterate(): Generator
+    {
+        if ($this->head === null) {
+            return;
+        }
+
+        $current = $this->head;
+        while ($current->hasNext()) {
+            yield $current;
+            $current = $current->getNext();
+        }
+        yield $current;
     }
 
     /**
@@ -161,7 +242,7 @@ class SortedLinkedList
 
         $list = [];
         $current = $this->head;
-        while ($current->getNext() !== null) {
+        while ($current->hasNext()) {
             $list[] = $current->getValue();
             $current = $current->getNext();
         }
