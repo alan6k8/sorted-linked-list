@@ -8,7 +8,6 @@ use Alan6k8\SortedLinkedList\Exception\ItemTypeMismatchException;
 use Alan6k8\SortedLinkedList\Factory\SortedLinkedListFactory;
 use Alan6k8\SortedLinkedList\Model\Item\IntegerItem;
 use Alan6k8\SortedLinkedList\Model\Item\StringItem;
-use Alan6k8\SortedLinkedList\Model\SortedLinkedList;
 use Codeception\AssertThrows;
 use Codeception\Util\Debug;
 use Tests\Support\UnitTester;
@@ -98,6 +97,58 @@ class SortedLinkedListTest extends \Codeception\Test\Unit
         );
     }
 
+    public function testAddItemUniqueOnlyDescending()
+    {
+        $listFactory = new SortedLinkedListFactory();
+        $list = $listFactory->createDescending(uniqueValuesOnly: true);
+        $list->add(new IntegerItem(2));
+        Debug::debug($list->toArray());
+
+        $list->addIntValue(2);
+        Debug::debug($list->toArray());
+
+        $list->add(new IntegerItem(10));
+        Debug::debug($list->toArray());
+
+        $list->add(new IntegerItem(2));
+        Debug::debug($list);
+
+        $list->add(new IntegerItem(10));
+        Debug::debug($list->toArray());
+
+        $this->assertEquals(
+            [10, 2],
+            $list->toArray(),
+            'List should contain expected unique items',
+        );
+    }
+
+    public function testAddItemUniqueOnlyAscending()
+    {
+        $listFactory = new SortedLinkedListFactory();
+        $list = $listFactory->createAscending(uniqueValuesOnly: true);
+        $list->add(new IntegerItem(2));
+        Debug::debug($list->toArray());
+
+        $list->addIntValue(2);
+        Debug::debug($list->toArray());
+
+        $list->add(new IntegerItem(10));
+        Debug::debug($list->toArray());
+
+        $list->add(new IntegerItem(2));
+        Debug::debug($list->toArray());
+
+        $list->add(new IntegerItem(10));
+        Debug::debug($list->toArray());
+
+        $this->assertEquals(
+            [2, 10],
+            $list->toArray(),
+            'List should contain expected unique items',
+        );
+    }
+
     public function testRemove()
     {
         $itemOne = new IntegerItem(2);
@@ -105,16 +156,19 @@ class SortedLinkedListTest extends \Codeception\Test\Unit
         $listFactory = new SortedLinkedListFactory();
         $list = $listFactory->createAscending();
         $list->add($itemOne);
-        // $list->addIntValue(5);
-        // $list->add($itemTwo);
-        // $list->addIntValue(18);
+        $list->addIntValue(5);
+        $list->add($itemTwo);
+        $list->addIntValue(18);
         Debug::debug($list->toArray());
 
         $list->remove($itemOne);
         $this->assertFalse($list->hasItem($itemOne));
 
-        // $list->remove($itemTwo);
+        $list->remove($itemTwo);
+        $this->assertFalse($list->hasItem($itemTwo));
 
+        Debug::debug($list->toArray());
+        $this->assertEquals([5, 18], $list->toArray(), 'List should contain expected items');
     }
 
     public function testShift()

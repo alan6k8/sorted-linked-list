@@ -10,20 +10,19 @@ use Alan6k8\SortedLinkedList\Value\LinkedListSortOrder;
 class SortedLinkedListFactory
 {
     public function create(
-        ?LinkedListSortOrder $sortOrder = null,
+        LinkedListSortOrder $sortOrder = LinkedListSortOrder::ASC,
+        bool $uniqueValuesOnly = false,
     ): SortedLinkedList {
-        return $sortOrder === null
-            ? new SortedLinkedList()
-            : new SortedLinkedList($sortOrder);
+        return new SortedLinkedList($sortOrder, $uniqueValuesOnly);
     }
 
-    public function createAscending(): SortedLinkedList
+    public function createAscending(bool $uniqueValuesOnly = false): SortedLinkedList
     {
-        return new SortedLinkedList(LinkedListSortOrder::ASC);
+        return new SortedLinkedList(LinkedListSortOrder::ASC, $uniqueValuesOnly);
     }
 
-    public function createDescending(): SortedLinkedList
+    public function createDescending(bool $uniqueValuesOnly = false): SortedLinkedList
     {
-        return new SortedLinkedList(LinkedListSortOrder::DESC);
+        return new SortedLinkedList(LinkedListSortOrder::DESC, $uniqueValuesOnly);
     }
 }

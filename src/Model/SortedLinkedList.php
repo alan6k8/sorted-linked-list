@@ -17,36 +17,41 @@ class SortedLinkedList
 {
     private ?AbstractItem $head = null;
 
+    /**
+     * @param LinkedListSortOrder $sortOrder
+     * @param bool $uniqueValuesOnly tells if the list should only contain items holding unique values
+     */
     public function __construct(
-        private readonly LinkedListSortOrder $sortOrder = LinkedListSortOrder::ASC,
+        protected readonly LinkedListSortOrder $sortOrder,
+        protected readonly bool $uniqueValuesOnly,
     ) {
     }
 
-    public function addValue(string|int $value, bool $uniqueOnly = false): AbstractItem
+    public function addValue(string|int $value): AbstractItem
     {
         $item = is_int($value) ? new IntegerItem($value) : new StringItem($value);
-        $this->add($item, $uniqueOnly);
+        $this->add($item);
 
         return $item;
     }
 
-    public function addStringValue(string $value, bool $uniqueOnly = false): StringItem
+    public function addStringValue(string $value): StringItem
     {
         $item = new StringItem($value);
-        $this->add($item, $uniqueOnly);
+        $this->add($item);
 
         return $item;
     }
 
-    public function addIntValue(int $value, bool $uniqueOnly = false): IntegerItem
+    public function addIntValue(int $value): IntegerItem
     {
         $item = new IntegerItem($value);
-        $this->add($item, $uniqueOnly);
+        $this->add($item);
 
         return $item;
     }
 
-    public function add(AbstractItem $item, bool $uniqueOnly = false): void
+    public function add(AbstractItem $item): void
     {
         if ($this->head === null) {
             $this->head = $item;
@@ -60,10 +65,10 @@ class SortedLinkedList
 
         $comparison = $this->compare($this->head, $item);
         if (
-            $this->sortOrder === LinkedListSortOrder::ASC && $comparison > 0
+            $this->sortOrder === LinkedListSortOrder::ASC && $comparison >= 0
             || $this->sortOrder === LinkedListSortOrder::DESC && $comparison < 1
         ) {
-            if ($uniqueOnly && $comparison === 0) {
+            if ($this->uniqueValuesOnly && $comparison === 0) {
                 // value is already enlisted
                 return;
             }
@@ -79,10 +84,10 @@ class SortedLinkedList
         while ($current->hasNext()) {
             $comparison = $this->compare($current->getNext(), $item);
             if (
-                $this->sortOrder === LinkedListSortOrder::ASC && $comparison > 0
+                $this->sortOrder === LinkedListSortOrder::ASC && $comparison >= 0
                 || $this->sortOrder === LinkedListSortOrder::DESC && $comparison < 1
             ) {
-                if ($uniqueOnly && $comparison === 0) {
+                if ($this->uniqueValuesOnly && $comparison === 0) {
                     // value is already enlisted
                     return;
                 }
@@ -113,32 +118,35 @@ class SortedLinkedList
             return true;
         }
 
-        // $current = $this->head;
-        // while ($current->getNext() !== null) {
-        //     $comparison = $current->getNext() === $item;
-        //     if ($comparison === 0) {
-        //         // remove item and terminate iteration
-        //         $next = $current->getNext()->getNext();
-        //         $item->setNext($current->getNext());
-        //         $current->setNext($item);
+        $current = $this->head;
+        while ($current->hasNext()) {
+            if ($current->getNext() !== $item) {
+                continue;
+            }
 
-        //         return true;
-        //     }
-        // }
+            // remove item and amend item link
+            $removedItem = $current->getNext();
+            $nextOfRemoved = $removedItem->hasNext() ? $removedItem->getNext() : null;
+            $removedItem->setNext(null); // remove deleted item from chain
+            $current->setNext($nextOfRemoved);
+            unset($removedItem);    // allow GC to collect it
 
-        // todo case missing
+            return true;
+        }
 
         return false;
     }
 
     // public function removeAllByValue(string|int $value): int
     // {
-        // just an idea, would most likely get powered by iteration and self::removeFirstByValue()
+        // just an idea
+        // would most likely get powered by iteration and self::removeFirstByValue()
     // }
 
     // public function removeFirstByValue(string|int $value): bool
     // {
-        // just an idea
+        // just an idea, could be powered by self::remove() but that would need AbstractItem::isEqualTo(AbstractItem $item, bool $strict)
+        // where strict would use === operator while !strict would go w/ value comparison
     // }
 
     public function pop(): AbstractItem
@@ -254,5 +262,7 @@ class SortedLinkedList
     protected function compare(AbstractItem $enlistedItem, AbstractItem $itemToEnlist): int
     {
         return $enlistedItem->getValue() <=> $itemToEnlist->getValue();
+        // fwrite(STDERR, $enlistedItem->getValue() . ' vs ' . $itemToEnlist->getValue() . ' = ' . $ret. PHP_EOL);
+        // return  $ret;
     }
 }
