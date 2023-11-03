@@ -262,7 +262,5 @@ class SortedLinkedList
     protected function compare(AbstractItem $enlistedItem, AbstractItem $itemToEnlist): int
     {
         return $enlistedItem->getValue() <=> $itemToEnlist->getValue();
-        // fwrite(STDERR, $enlistedItem->getValue() . ' vs ' . $itemToEnlist->getValue() . ' = ' . $ret. PHP_EOL);
-        // return  $ret;
     }
 }
