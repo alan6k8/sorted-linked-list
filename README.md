@@ -31,7 +31,7 @@ new SortedLinkedList(LinkedListSortOrder::ASC, true);
 
 ## Installation
 
-Omnipay is installed via [Composer](https://getcomposer.org/).
+Library is installed via [Composer](https://getcomposer.org/).
 
 
 ```
